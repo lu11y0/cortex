@@ -1,0 +1,11 @@
+# Hardware Profiling System Requirements
+# Python 3.8+ required
+
+# No external dependencies required - uses only standard library
+# System dependencies (Ubuntu 22.04+):
+# - nvidia-smi (for NVIDIA GPU detection)
+# - rocm-smi (optional, for AMD GPU VRAM detection)
+# - lspci (usually pre-installed)
+# - lsblk (usually pre-installed)
+# - ip (usually pre-installed)
+
