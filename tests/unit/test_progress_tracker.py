@@ -277,8 +277,8 @@ class TestProgressTracker:
             # Should not raise an error
             tracker.complete(success=True)
 
-    @patch("progress_tracker.PLYER_AVAILABLE", True)
-    @patch("progress_tracker.plyer_notification")
+    @patch("cortex.progress_tracker.PLYER_AVAILABLE", True)
+    @patch("cortex.progress_tracker.plyer_notification")
     def test_notifications_sent(self, mock_notification):
         """Test that notifications are sent when enabled."""
         mock_notification.notify = Mock()
@@ -365,7 +365,7 @@ class TestRichProgressTracker:
         with patch("progress_tracker.RICH_AVAILABLE", False), pytest.raises(ImportError):
             RichProgressTracker("Test")
 
-    @patch("progress_tracker.RICH_AVAILABLE", True)
+    @patch("cortex.progress_tracker.RICH_AVAILABLE", True)
     def test_rich_tracker_creation(self):
         """Test creating a rich progress tracker."""
         with patch("progress_tracker.Console"), patch("progress_tracker.Progress"):
@@ -374,7 +374,7 @@ class TestRichProgressTracker:
             assert tracker.progress_obj is None
 
     @pytest.mark.asyncio
-    @patch("progress_tracker.RICH_AVAILABLE", True)
+    @patch("cortex.progress_tracker.RICH_AVAILABLE", True)
     async def test_live_progress_context(self):
         """Test live progress context manager."""
         with patch("progress_tracker.Console"):

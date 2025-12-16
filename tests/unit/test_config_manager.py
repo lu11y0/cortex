@@ -179,7 +179,7 @@ class TestConfigManager(unittest.TestCase):
 
     @patch.object(ConfigManager, "detect_installed_packages")
     @patch.object(ConfigManager, "_detect_os_version")
-    @patch("hwprofiler.HardwareProfiler")
+    @patch("cortex.hwprofiler.HardwareProfiler")
     def test_export_configuration_with_hardware(
         self, mock_hwprofiler_class, mock_os, mock_packages
     ):

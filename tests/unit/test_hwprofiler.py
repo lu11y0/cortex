@@ -225,11 +225,11 @@ MemAvailable:   23456789 kB
         self.assertIn("interfaces", network)
         self.assertGreaterEqual(network["max_speed_mbps"], 0)
 
-    @patch("hwprofiler.HardwareProfiler.detect_cpu")
-    @patch("hwprofiler.HardwareProfiler.detect_gpu")
-    @patch("hwprofiler.HardwareProfiler.detect_ram")
-    @patch("hwprofiler.HardwareProfiler.detect_storage")
-    @patch("hwprofiler.HardwareProfiler.detect_network")
+    @patch("cortex.hwprofiler.HardwareProfiler.detect_cpu")
+    @patch("cortex.hwprofiler.HardwareProfiler.detect_gpu")
+    @patch("cortex.hwprofiler.HardwareProfiler.detect_ram")
+    @patch("cortex.hwprofiler.HardwareProfiler.detect_storage")
+    @patch("cortex.hwprofiler.HardwareProfiler.detect_network")
     def test_profile_complete(self, mock_network, mock_storage, mock_ram, mock_gpu, mock_cpu):
         """Test complete profiling."""
         mock_cpu.return_value = {
