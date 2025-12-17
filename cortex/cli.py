@@ -169,7 +169,7 @@ class CortexCLI:
             return 1
 
     # -------------------------------
-    
+
     def stack(self, args: argparse.Namespace) -> int:
         """Handle `cortex stack` commands (list/describe/install/dry-run)."""
         try:
@@ -177,7 +177,9 @@ class CortexCLI:
 
             # Validate --dry-run requires a stack name
             if args.dry_run and not args.name:
-                self._print_error("--dry-run requires a stack name (e.g., `cortex stack ml --dry-run`)")
+                self._print_error(
+                    "--dry-run requires a stack name (e.g., `cortex stack ml --dry-run`)"
+                )
                 return 1
 
             # List stacks (default when no name/describe)
@@ -196,7 +198,7 @@ class CortexCLI:
             return 1
         except ValueError as e:
             self._print_error(f"stacks.json is invalid or malformed: {e}")
-            return 1        
+            return 1
 
     def _handle_stack_list(self, manager: StackManager) -> int:
         """List all available stacks."""
@@ -225,27 +227,28 @@ class CortexCLI:
         """Install a stack with optional hardware-aware selection."""
         original_name = args.name
         suggested_name = manager.suggest_stack(args.name)
-        
+
         if suggested_name != original_name:
             cx_print(
                 f"💡 No GPU detected, using '{suggested_name}' instead of '{original_name}'",
-                "info")
-        
+                "info",
+            )
+
         stack = manager.find_stack(suggested_name)
         if not stack:
             self._print_error(
                 f"Stack '{suggested_name}' not found. Use --list to see available stacks."
             )
             return 1
-        
+
         packages = stack.get("packages", [])
         if not packages:
             self._print_error(f"Stack '{suggested_name}' has no packages configured.")
             return 1
-        
+
         if args.dry_run:
             return self._handle_stack_dry_run(stack, packages)
-        
+
         return self._handle_stack_real_install(stack, packages)
 
     def _handle_stack_dry_run(self, stack: dict[str, Any], packages: list[str]) -> int:
@@ -273,13 +276,25 @@ class CortexCLI:
         self._print_success(f"\n✅ Stack '{stack['name']}' installed successfully!")
         console.print(f"Installed {len(packages)} packages")
         return 0
-    
+
     def install(self, software: str, execute: bool = False, dry_run: bool = False):
-        # Validate input first
         is_valid, error = validate_install_request(software)
         if not is_valid:
             self._print_error(error)
             return 1
+        
+        # Special-case the ml-cpu stack:
+        # The LLM sometimes generates outdated torch==1.8.1+cpu installs
+        # which fail on modern Python. For the "pytorch-cpu jupyter numpy pandas"
+        # combo, force a supported CPU-only PyTorch recipe instead.
+        normalized = " ".join(software.split()).lower()
+
+        if normalized == "pytorch-cpu jupyter numpy pandas":
+            software = (
+                "pip3 install torch torchvision torchaudio "
+                "--index-url https://download.pytorch.org/whl/cpu && "
+                "pip3 install jupyter numpy pandas"
+            )
 
         api_key = self._get_api_key()
         if not api_key:
