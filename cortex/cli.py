@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import Optional, Any
+from typing import Any
 import os
 import sys
 import time
@@ -17,7 +17,7 @@ from cortex.coordinator import InstallationCoordinator, StepStatus
 from cortex.installation_history import InstallationHistory, InstallationStatus, InstallationType
 from cortex.llm.interpreter import CommandInterpreter
 from cortex.notification_manager import NotificationManager
-from cortex.stack_manager import StackManager  
+from cortex.stack_manager import StackManager
 from cortex.user_preferences import (
     PreferencesManager,
     format_preference_value,
@@ -282,7 +282,7 @@ class CortexCLI:
         if not is_valid:
             self._print_error(error)
             return 1
-        
+
         # Special-case the ml-cpu stack:
         # The LLM sometimes generates outdated torch==1.8.1+cpu installs
         # which fail on modern Python. For the "pytorch-cpu jupyter numpy pandas"

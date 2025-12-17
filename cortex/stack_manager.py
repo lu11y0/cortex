@@ -10,14 +10,14 @@ Usage:
 import json
 from pathlib import Path
 from typing import Any
-
 from cortex.hardware_detection import has_nvidia_gpu
 
 class StackManager:
     """Manages pre-built package stacks with hardware awareness"""
 
+
     def __init__(self) -> None:
-        # stacks.json is in the same directory as this file (cortex/)
+    # stacks.json is in the same directory as this file (cortex/)
         self.stacks_file = Path(__file__).parent / "stacks.json"
         self._stacks = None
 
