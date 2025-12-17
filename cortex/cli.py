@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Optional, Any
 import os
 import sys
 import time
@@ -16,9 +16,8 @@ from cortex.branding import VERSION, console, cx_header, cx_print, show_banner
 from cortex.coordinator import InstallationCoordinator, StepStatus
 from cortex.installation_history import InstallationHistory, InstallationStatus, InstallationType
 from cortex.llm.interpreter import CommandInterpreter
-
-# Import the new Notification Manager
 from cortex.notification_manager import NotificationManager
+from cortex.stack_manager import StackManager  
 from cortex.user_preferences import (
     PreferencesManager,
     format_preference_value,
@@ -28,10 +27,6 @@ from cortex.validators import (
     validate_api_key,
     validate_install_request,
 )
-# Import the new Notification Manager
-from cortex.notification_manager import NotificationManager
-from cortex.stack_manager import StackManager
-
 
 class CortexCLI:
     def __init__(self, verbose: bool = False):
@@ -174,6 +169,7 @@ class CortexCLI:
             return 1
 
     # -------------------------------
+    
     def stack(self, args: argparse.Namespace) -> int:
         """Handle `cortex stack` commands (list/describe/install/dry-run)."""
         try:
@@ -200,10 +196,7 @@ class CortexCLI:
             return 1
         except ValueError as e:
             self._print_error(f"stacks.json is invalid or malformed: {e}")
-            return 1
-
-        
-
+            return 1        
 
     def _handle_stack_list(self, manager: StackManager) -> int:
         """List all available stacks."""
@@ -218,7 +211,6 @@ class CortexCLI:
         cx_print("Use: cortex stack <name> to install a stack", "info")
         return 0
 
-
     def _handle_stack_describe(self, manager: StackManager, stack_id: str) -> int:
         """Describe a specific stack."""
         stack = manager.find_stack(stack_id)
@@ -229,7 +221,6 @@ class CortexCLI:
         console.print(description)
         return 0
 
-
     def _handle_stack_install(self, manager: StackManager, args: argparse.Namespace) -> int:
         """Install a stack with optional hardware-aware selection."""
         original_name = args.name
@@ -238,8 +229,7 @@ class CortexCLI:
         if suggested_name != original_name:
             cx_print(
                 f"💡 No GPU detected, using '{suggested_name}' instead of '{original_name}'",
-                "info"
-            )
+                "info")
         
         stack = manager.find_stack(suggested_name)
         if not stack:
@@ -258,8 +248,7 @@ class CortexCLI:
         
         return self._handle_stack_real_install(stack, packages)
 
-
-    def _handle_stack_dry_run(self, stack: Dict[str, Any], packages: List[str]) -> int:
+    def _handle_stack_dry_run(self, stack: dict[str, Any], packages: list[str]) -> int:
         """Preview packages that would be installed without executing."""
         cx_print(f"\n📋 Stack: {stack['name']}", "info")
         console.print("\nPackages that would be installed:")
@@ -269,28 +258,21 @@ class CortexCLI:
         cx_print("\nDry run only - no commands executed", "warning")
         return 0
 
-
-    def _handle_stack_real_install(self, stack: Dict[str, Any], packages: List[str]) -> int:
+    def _handle_stack_real_install(self, stack: dict[str, Any], packages: list[str]) -> int:
         """Install all packages in the stack."""
         cx_print(f"\n🚀 Installing stack: {stack['name']}\n", "success")
-        total = len(packages)
-        
-        for idx, pkg in enumerate(packages, 1):
-            cx_print(f"[{idx}/{total}] Installing {pkg}...", "info")
-            result = self.install(software=pkg, execute=True, dry_run=False)
-            
-            if result != 0:
-                self._print_error(
-                    f"Failed to install {pkg} from stack '{stack['name']}'"
-                )
-                return 1
-        
+
+        # Batch into a single LLM request
+        packages_str = " ".join(packages)
+        result = self.install(software=packages_str, execute=True, dry_run=False)
+
+        if result != 0:
+            self._print_error(f"Failed to install stack '{stack['name']}'")
+            return 1
+
         self._print_success(f"\n✅ Stack '{stack['name']}' installed successfully!")
         console.print(f"Installed {len(packages)} packages")
         return 0
-
-
-
     
     def install(self, software: str, execute: bool = False, dry_run: bool = False):
         # Validate input first
