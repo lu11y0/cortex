@@ -277,6 +277,12 @@ class CortexCLI:
         self._print_success(f"\n✅ Stack '{stack['name']}' installed successfully!")
         console.print(f"Installed {len(packages)} packages")
         return 0
+    # Run system health checks
+    def doctor(self):
+        from cortex.doctor import SystemDoctor
+
+        doctor = SystemDoctor()
+        return doctor.run_checks()
 
     def install(self, software: str, execute: bool = False, dry_run: bool = False):
         is_valid, error = validate_install_request(software)
@@ -682,6 +688,7 @@ def show_rich_help():
     table.add_row("notify", "Manage desktop notifications")  # Added this line
     table.add_row("cache stats", "Show LLM cache statistics")
     table.add_row("stack <name>", "Install the stack")
+    table.add_row("doctor", "System health check")
 
     console.print(table)
     console.print()
@@ -728,6 +735,9 @@ def main():
 
     # Status command
     status_parser = subparsers.add_parser("status", help="Show system status")
+
+    # doctor command
+    doctor_parser = subparsers.add_parser("doctor", help="Run system health check")
 
     # Install command
     install_parser = subparsers.add_parser("install", help="Install software")
@@ -821,6 +831,8 @@ def main():
             return cli.notify(args)
         elif args.command == "stack":
             return cli.stack(args)
+        elif args.command == "doctor":
+            return cli.doctor()
         elif args.command == "cache":
             if getattr(args, "cache_action", None) == "stats":
                 return cli.cache_stats()
