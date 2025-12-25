@@ -325,6 +325,7 @@ class CortexCLI:
             return 1
         except Exception as e:
             console.print(f"[red]✗ Script command failed: {str(e)}[/red]")
+
     def ask(self, question: str) -> int:
         """Answer a natural language question about the system."""
         api_key = self._get_api_key()
