@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from cortex.api_key_detector import setup_api_key
 from cortex.ask import AskHandler
-from cortex.branding import VERSION, console, show_banner
+from cortex.branding import VERSION, console, cx_header, cx_print, show_banner
 from cortex.coordinator import InstallationCoordinator, InstallationStep, StepStatus
 from cortex.demo import run_demo
 from cortex.dependency_importer import (
@@ -279,6 +279,7 @@ class CortexCLI:
         Run the one-command investor demo
         """
         return run_demo()
+
     def stack(self, args: argparse.Namespace) -> int:
         try:
             manager = StackManager()
@@ -305,9 +306,7 @@ class CortexCLI:
         """Describe a specific stack."""
         stack = manager.find_stack(stack_id)
         if not stack:
-            self._print_error(
-                f"Stack '{stack_id}' not found. Use --list to see available stacks."
-            )
+            self._print_error(f"Stack '{stack_id}' not found. Use --list to see available stacks.")
             return 1
 
         section(f"STACK DETAILS: {stack_id}")
@@ -324,6 +323,7 @@ class CortexCLI:
         )
 
         from rich.panel import Panel
+
         console.print(
             Panel(
                 description,
@@ -831,7 +831,6 @@ class CortexCLI:
                     InstallationType.INSTALL, packages, commands, start_time
                 )
 
-
             section("INSTALLATION PLAN")
 
             data_table(
@@ -865,6 +864,7 @@ class CortexCLI:
 
             if parallel:
                 import asyncio
+
                 from cortex.install_parallel import run_parallel_install
 
                 def parallel_log_callback(message: str, level: str = "info"):
@@ -888,9 +888,7 @@ class CortexCLI:
                         )
                 except Exception as e:
                     if install_id:
-                        history.update_installation(
-                            install_id, InstallationStatus.FAILED, str(e)
-                        )
+                        history.update_installation(install_id, InstallationStatus.FAILED, str(e))
                     self._print_error(f"Parallel execution failed: {e}")
                     return 1
 
@@ -1032,9 +1030,7 @@ class CortexCLI:
                         "Operation": record.operation_type.value,
                         "Status": status_display,
                         "Duration": (
-                            f"{record.duration_seconds:.2f}s"
-                            if record.duration_seconds
-                            else "N/A"
+                            f"{record.duration_seconds:.2f}s" if record.duration_seconds else "N/A"
                         ),
                         "Rollback available": str(record.rollback_available),
                     },
@@ -1115,6 +1111,7 @@ class CortexCLI:
             self._print_error(f"Unexpected error retrieving history: {str(e)}")
             if self.verbose:
                 import traceback
+
                 traceback.print_exc()
             return 1
 
@@ -1293,11 +1290,7 @@ class CortexCLI:
 
         encrypted = var_info.encrypted if var_info else False
 
-        display_value = (
-            "[dim][encrypted][/dim]"
-            if encrypted and not show_encrypted
-            else str(value)
-        )
+        display_value = "[dim][encrypted][/dim]" if encrypted and not show_encrypted else str(value)
 
         section("ENV VARIABLE")
 
@@ -2213,10 +2206,9 @@ class CortexCLI:
 
             result = coordinator.execute()
             # Explicitly show commands as they are about to run
-            for idx, cmd in enumerate(commands, 1):
-                info(f"Step {idx}/{len(commands)}", badge=True)
+            for idx, cmd in enumerate(command, 1):
+                info(f"Step {idx}/{len(command)}", badge=True)
                 console.print(f"    [dim]→ {cmd}[/dim]")
-
 
         if result.success:
             summary_box(
@@ -2271,6 +2263,8 @@ class CortexCLI:
         return 1
 
     # --------------------------
+
+
 def show_rich_help():
     """Display a beautifully formatted help table using the Rich library.
 
@@ -2310,7 +2304,6 @@ def show_rich_help():
             ["cache stats", "Show LLM cache statistics"],
             ["stack <name>", "Install a predefined stack"],
             ["sandbox <cmd>", "Test packages in a Docker sandbox"],
-
         ],
         title="AVAILABLE COMMANDS",
     )
@@ -2378,7 +2371,7 @@ def main():
 
     subparsers.add_parser("demo", help="See Cortex in action")
     subparsers.add_parser("wizard", help="Configure API key interactively")
-    
+
     subparsers.add_parser("status", help="Show comprehensive system status and health checks")
 
     ask_parser = subparsers.add_parser("ask", help="Ask a question about your system")
@@ -2440,7 +2433,6 @@ def main():
     cache_subs = cache_parser.add_subparsers(dest="cache_action")
     cache_subs.add_parser("stats")
 
-
     # --- Sandbox Commands (Docker-based package testing) ---
     sandbox_parser = subparsers.add_parser("sandbox", help="Test packages in Docker sandbox")
     sandbox_subs = sandbox_parser.add_subparsers(dest="sandbox_action")
@@ -2466,22 +2458,18 @@ def main():
     sandbox_promote_parser.add_argument("--dry-run", action="store_true")
     sandbox_promote_parser.add_argument("-y", "--yes", action="store_true")
 
-
     # sandbox cleanup <name> [--force]
     sandbox_cleanup_parser = sandbox_subs.add_parser("cleanup")
     sandbox_cleanup_parser.add_argument("name")
     sandbox_cleanup_parser.add_argument("-f", "--force", action="store_true")
 
-
     # sandbox list
     sandbox_subs.add_parser("list")
-
 
     # sandbox exec <name> <command...>
     sandbox_exec_parser = sandbox_subs.add_parser("exec")
     sandbox_exec_parser.add_argument("name")
-    sandbox_exec_parser.add_argument("cmd",  nargs="+") #maybe needs update here
-
+    sandbox_exec_parser.add_argument("cmd", nargs="+")  # maybe needs update here
 
     # --- Environment Variable Management Commands ---
     env_parser = subparsers.add_parser("env", help="Manage environment variables")
@@ -2552,12 +2540,12 @@ def main():
     env_template_show_parser.add_argument("template_name")
 
     # env template apply <template> <app> [KEY=VALUE...] [--encrypt-keys KEYS]
-    # need to update things here if needed 
+    # need to update things here if needed
     env_template_apply_parser = env_template_subs.add_parser("apply")
     env_template_apply_parser.add_argument("template_name")
     env_template_apply_parser.add_argument("app")
     env_template_apply_parser.add_argument("values", nargs="*")
-    env_template_apply_parser.add_argument("--encrypt-keys") 
+    env_template_apply_parser.add_argument("--encrypt-keys")
 
     args = parser.parse_args()
 

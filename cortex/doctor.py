@@ -9,22 +9,22 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
+from cortex.branding import show_banner
 from cortex.ui import (
     console,
+    error,
+    info,
     section,
     spinner,
     success,
-    warning,
-    error,
     summary_box,
-    info,
+    warning,
 )
 from cortex.validators import validate_api_key
-from cortex.branding import show_banner
-import time
 
 
 class SystemDoctor:
@@ -83,7 +83,7 @@ class SystemDoctor:
             self._print_section("Python & Dependencies")
             self._check_python()
             self._check_dependencies()
-   
+
             time.sleep(0.5)
             self._print_section("GPU & Acceleration")
             self._check_gpu_driver()
@@ -113,7 +113,7 @@ class SystemDoctor:
         self,
         status: str,
         message: str,
-        suggestion: Optional[str] = None,
+        suggestion: str | None = None,
     ) -> None:
         """
         Print a check result using UI helpers and track statuses.
@@ -277,9 +277,6 @@ class SystemDoctor:
         except ImportError:
             # torch not installed; just continue
             pass
-        except Exception:
-            # any other torch-related issue, ignore here
-            pass
 
         self._print_check(
             "WARN",
@@ -315,7 +312,7 @@ class SystemDoctor:
 
     def _check_api_keys(self) -> None:
         """Check if API keys are configured for cloud models."""
-        is_valid, provider, error_msg = validate_api_key()
+        is_valid, provider, _ = validate_api_key()
 
         if is_valid:
             self._print_check("PASS", f"{provider} API key configured")
@@ -392,10 +389,10 @@ class SystemDoctor:
             self._print_check(
                 "FAIL",
                 f"Only {mem_gb:.1f}GB RAM (8GB minimum required)",
-                 "Upgrade RAM to at least 8GB",
+                "Upgrade RAM to at least 8GB",
             )
 
-    def _get_system_memory(self) -> Optional[float]:
+    def _get_system_memory(self) -> float | None:
         """
         Get system memory in GB.
 
@@ -418,8 +415,6 @@ class SystemDoctor:
 
             return psutil.virtual_memory().total / (1024**3)
         except ImportError:
-            pass
-        except Exception:
             pass
 
         return None
@@ -459,6 +454,7 @@ class SystemDoctor:
                 console.print(f"    [yellow]⚠[/yellow] {wmsg}")
         else:
             success("All checks passed! System is healthy.")
+
 
 def run_doctor() -> int:
     """

@@ -7,12 +7,13 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import Any, Optional
 
+from rich.columns import Columns
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, BarColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.rule import Rule
 from rich.status import Status
 from rich.table import Table
-from rich.columns import Columns
 
 console = Console()
 
@@ -25,9 +26,10 @@ DEFAULT_PANEL_WIDTH = 70
 # STATUS MESSAGES
 # ============================================================================
 
+
 def success(message: str, details: str = "", badge: bool = True):
     """Green success message with ✓
-    
+
     Args:
         message: Main success message
         details: Optional additional details (dimmed)
@@ -41,7 +43,7 @@ def success(message: str, details: str = "", badge: bool = True):
 
 def error(message: str, details: str = "", badge: bool = True):
     """Red error message with ✗
-    
+
     Args:
         message: Main error message
         details: Optional error details
@@ -55,7 +57,7 @@ def error(message: str, details: str = "", badge: bool = True):
 
 def warning(message: str, details: str = "", badge: bool = True):
     """Yellow warning with ⚠
-    
+
     Args:
         message: Warning message
         details: Optional warning details
@@ -69,10 +71,10 @@ def warning(message: str, details: str = "", badge: bool = True):
 
 def info(message: str, badge: bool = False):
     """Info message
-    
+
     Args:
         message: Info message
-        badge: Show CX badge (default: True)
+        badge: Show CX badge (default: False)
     """
     prefix = f"{BADGE} [dim]│[/dim] " if badge else ""
     console.print(f"{prefix}{message}")
@@ -80,7 +82,7 @@ def info(message: str, badge: bool = False):
 
 def section(title: str, style: str = "bold cyan"):
     """Section header
-    
+
     Args:
         title: Section title
         style: Rich style string (default: "bold cyan")
@@ -94,14 +96,15 @@ def section(title: str, style: str = "bold cyan"):
 # SPINNER
 # ============================================================================
 
+
 @contextmanager
 def spinner(message: str, spinner_style: str = "dots"):
-    """Context manager for showing spinner during long operations [web:15]
-    
+    """Context manager for showing spinner during long operations
+
     Args:
         message: Message to display with spinner
         spinner_style: Spinner animation style (default: "dots")
-        
+
     Usage:
         with spinner("Installing packages..."):
             do_work()
@@ -118,16 +121,17 @@ def spinner(message: str, spinner_style: str = "dots"):
 # BOXES AND PANELS
 # ============================================================================
 
+
 def status_box(
     title: str,
     items: dict[str, str],
     border_color: str = DEFAULT_BORDER_COLOR,
-    width: Optional[int] = DEFAULT_PANEL_WIDTH,
+    width: int | None = DEFAULT_PANEL_WIDTH,
     fit: bool = False,
-    padding: tuple[int, int] = (1, 2)
+    padding: tuple[int, int] = (1, 2),
 ):
     """Display a boxed status with key-value pairs
-    
+
     Args:
         title: Box title
         items: Dictionary of key-value pairs to display
@@ -135,7 +139,7 @@ def status_box(
         width: Fixed width in characters (default: 70), ignored if fit=True
         fit: Auto-fit to content width (default: False)
         padding: Tuple of (vertical, horizontal) padding
-        
+
     Example:
         status_box(
             "CORTEX ML SCHEDULER",
@@ -154,10 +158,7 @@ def status_box(
 
     if fit:
         panel = Panel.fit(
-            table,
-            title=f"[bold]{title}[/bold]",
-            border_style=border_color,
-            padding=padding
+            table, title=f"[bold]{title}[/bold]", border_style=border_color, padding=padding
         )
     else:
         panel = Panel(
@@ -166,10 +167,11 @@ def status_box(
             border_style=border_color,
             padding=padding,
             expand=False,
-            width=width
+            width=width,
         )
 
     console.print(panel)
+
 
 def text_box(
     title: str,
@@ -186,20 +188,18 @@ def text_box(
     )
     console.print(panel)
 
+
 def summary_box(
-    title: str,
-    items: list[str],
-    success: bool = True,
-    border_color: Optional[str] = None
+    title: str, items: list[str], success: bool = True, border_color: str | None = None
 ):
-    """Summary box for operation completion [web:11]
-    
+    """Summary box for operation completion
+
     Args:
         title: Summary title
         items: List of items to display
         success: Whether operation succeeded (affects color/icon)
         border_color: Optional override for border color
-        
+
     Example:
         summary_box(
             "INSTALLATION COMPLETE",
@@ -214,7 +214,7 @@ def summary_box(
     for item in items:
         content += f"  • {item}\n"
 
-    panel = Panel(content, border_style=color, padding=(1, 2),expand=False)
+    panel = Panel(content, border_style=color, padding=(1, 2), expand=False)
     console.print(panel)
 
 
@@ -222,17 +222,18 @@ def summary_box(
 # TABLES
 # ============================================================================
 
+
 def data_table(
     columns: list[dict[str, Any]],
     rows: list[list[Any]],
-    title: Optional[str] = None,
+    title: str | None = None,
     show_header: bool = True,
     border_style: str = "dim",
     title_style: str = "bold",
-    expand: bool = False
+    expand: bool = False,
 ) -> Table:
-    """Create and display a data table [web:11]
-    
+    """Create and display a data table
+
     Args:
         columns: List of column dicts with 'name', optional 'style', 'justify', 'width'
         rows: List of row data (list of values matching column order)
@@ -241,10 +242,10 @@ def data_table(
         border_style: Border style (default: "dim")
         title_style: Title style (default: "bold")
         expand: Expand to full terminal width (default: False)
-        
+
     Returns:
         The created Table object
-        
+
     Example:
         data_table(
             columns=[
@@ -265,9 +266,9 @@ def data_table(
         border_style=border_style,
         title_style=title_style,
         expand=expand,
-        padding=(0, 1)
+        padding=(0, 1),
     )
-    
+
     # Add columns with their configurations
     for col in columns:
         table.add_column(
@@ -275,34 +276,34 @@ def data_table(
             style=col.get("style", "white"),
             justify=col.get("justify", "left"),
             no_wrap=col.get("no_wrap", False),
-            width=col.get("width")
+            width=col.get("width"),
         )
-    
+
     # Add rows
     for row in rows:
         table.add_row(*[str(cell) for cell in row])
-    
+
     console.print()
     console.print(table)
     console.print()
-    
+
     return table
 
 
 def compact_list(
     items: list[dict[str, str]],
-    title: Optional[str] = None,
+    title: str | None = None,
     columns_count: int = 2,
-    equal: bool = True
+    equal: bool = True,
 ):
     """Display items in a compact multi-column layout
-    
+
     Args:
         items: List of dicts with 'title', 'content', optional 'border_color'
         title: Optional section title
         columns_count: Number of columns (default: 2)
         equal: Make columns equal width (default: True)
-        
+
     Example:
         compact_list(
             items=[
@@ -315,17 +316,17 @@ def compact_list(
     """
     if title:
         section(title)
-    
+
     panels = []
     for item in items:
         panel = Panel(
             item["content"],
             title=f"[bold]{item['title']}[/bold]",
             border_style=item.get("border_color", DEFAULT_BORDER_COLOR),
-            expand=False
+            expand=False,
         )
         panels.append(panel)
-    
+
     console.print(Columns(panels, equal=equal, expand=True))
     console.print()
 
@@ -334,13 +335,14 @@ def compact_list(
 # PROGRESS BARS
 # ============================================================================
 
+
 @contextmanager
 def progress_bar(transient: bool = False):
-    """Context manager for progress bar operations [web:11]
-    
+    """Context manager for progress bar operations
+
     Args:
         transient: Remove progress bar after completion (default: False)
-        
+
     Usage:
         with progress_bar() as progress:
             task = progress.add_task("Downloading...", total=100)
@@ -354,7 +356,7 @@ def progress_bar(transient: bool = False):
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         TimeElapsedColumn(),
         console=console,
-        transient=transient
+        transient=transient,
     )
     prog.start()
     try:
@@ -366,6 +368,7 @@ def progress_bar(transient: bool = False):
 # ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
+
 
 def print_newline(count: int = 1):
     """Print one or more blank lines"""
@@ -380,10 +383,9 @@ def clear():
 
 def rule(title: str = "", style: str = "dim"):
     """Print a horizontal rule with optional title
-    
+
     Args:
         title: Optional centered title
         style: Rule style (default: "dim")
     """
-    from rich.rule import Rule
     console.print(Rule(title, style=style))

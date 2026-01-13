@@ -12,9 +12,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from rich.console import Console
-from rich.panel import Panel
-
 from cortex.branding import show_banner
 from cortex.hardware_detection import SystemInfo, detect_hardware
 
